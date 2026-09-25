@@ -4,17 +4,15 @@ import time
 import datetime
 import os
 
-# 企业微信 Webhook（发送到你手机）
 WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8b2dd898-782b-49ec-8cf0-31fb70095f1a"
-
-FALL_24H_THRESHOLD = 5.0   # 24小时内下跌超过 5%
-FALL_7D_THRESHOLD = 10.0   # 7天内下跌超过 10%
+FALL_24H_THRESHOLD = 5.0
+FALL_7D_THRESHOLD = 10.0
 HISTORY_FILE = "box_price_history.json"
 
 def send_wechat_alert(message):
     payload = {
         "msgtype": "text",
-        "text": {"content": "【BOX基金价格预警】\n" + message}
+        "text": {"content": "【BOX基金预警/行情】\n" + message}
     }
     try:
         req_data = json.dumps(payload).encode('utf-8')
@@ -24,7 +22,7 @@ def send_wechat_alert(message):
             headers={'Content-Type': 'application/json'}
         )
         urllib.request.urlopen(req)
-        print("预警通知已发送")
+        print("通知已发送")
     except Exception as e:
         print("发送失败：", e)
 
@@ -77,8 +75,14 @@ def check_box_monitor():
         if drop_7d <= -FALL_7D_THRESHOLD:
             alert_messages.append(f"⚠️ 7天内累计下跌！当前跌幅 {drop_7d:.2f}%。现价：${price:.4f} USD")
 
+    # 无论是否跌破阈值，也发送一条当前的实时行情，确保你能随时收到反馈
+    status_msg = f"📊 BOX当前实时价格: ${price:.4f} USD\n📈 24小时涨跌幅: {change_24h_api:.2f}%\n"
     if alert_messages:
-        send_wechat_alert("\n".join(alert_messages))
+        status_msg += "\n" + "\n".join(alert_messages)
+    else:
+        status_msg += "✅ 当前运行平稳，无跌幅预警。"
+
+    send_wechat_alert(status_msg)
 
 if __name__ == '__main__':
     check_box_monitor()
