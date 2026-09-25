@@ -1,0 +1,22 @@
+name: BOX Price Monitor
+
+on:
+  schedule:
+    # 每隔 4 小时运行一次（GitHub Actions 的定时任务基于 UTC 时间）
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run monitor script
+        run: python box_monitor.py
