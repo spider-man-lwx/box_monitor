@@ -68,18 +68,26 @@ def check_box_monitor():
         json.dump(history, f)
 
     one_day_ago = now - 24 * 3600
-    day_records = [h for h in history if h['timestamp'] <= one_day_ago + 3600]
-    
+    day_records = [h for h in history if h['timestamp'] <= one_day_ago]
+    if not day_records and len(history) > 1:
+        # 如果没有正好满24小时前的记录，取历史记录中最接近24小时前（或者最早的一条）
+        day_records = [history[0]]
+
     change_24h_pct = 0.0
     if day_records:
         old_price_24h = day_records[0]['price']
-        change_24h_pct = ((price - old_price_24h) / old_price_24h) * 100
+        if old_price_24h > 0:
+            change_24h_pct = ((price - old_price_24h) / old_price_24h) * 100
 
-    seven_records = [h for h in history if h['timestamp'] <= seven_days_ago + 3600]
+    seven_records = [h for h in history if h['timestamp'] <= seven_days_ago]
+    if not seven_records and len(history) > 1:
+        seven_records = [history[0]]
+
     change_7d_pct = 0.0
-    if seven_records:
+    if seven_records and len(history) > 1 and history[0]['timestamp'] <= seven_days_ago:
         old_price_7d = seven_records[0]['price']
-        change_7d_pct = ((price - old_price_7d) / old_price_7d) * 100
+        if old_price_7d > 0:
+            change_7d_pct = ((price - old_price_7d) / old_price_7d) * 100
 
     alert_messages = []
     
