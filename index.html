@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李伟星的个人主页 · 终身成长与代码实践</title>
+    <!-- 引入高雅的衬线体与现代无衬线体，致敬经典极简风格 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #faf9f6; /* 宣纸/米白 温暖质感 */
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border-color: #eae8e1;
+            --accent-color: #b35900;
+            --max-width: 680px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-primary: #e0e0e0;
+                --text-secondary: #a0a0a0;
+                --text-muted: #666666;
+                --border-color: #2a2a2a;
+                --accent-color: #d97706;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.7;
+            padding: 4rem 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+        }
+
+        /* 顶部导航 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+            font-size: 0.95rem;
+        }
+
+        .logo {
+            font-family: 'Newsreader', serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            margin-left: 1.5rem;
+            transition: color 0.2s ease;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--text-primary);
+        }
+
+        /* 个人简介区块 */
+        .profile-section {
+            margin-bottom: 4rem;
+        }
+
+        .profile-title {
+            font-family: 'Newsreader', serif;
+            font-size: 2.5rem;
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .profile-title em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .profile-desc {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-tags {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* 区块样式 */
+        section {
+            margin-bottom: 3.5rem;
+        }
+
+        .section-header {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 文章列表 */
+        .post-list {
+            list-style: none;
+        }
+
+        .post-item {
+            margin-bottom: 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+        }
+
+        .post-link {
+            font-family: 'Newsreader', serif;
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: opacity 0.2s;
+        }
+
+        .post-link:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .post-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 当前动态/卡片 */
+        .currently-box {
+            background-color: var(--border-color);
+            padding: 1.25rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--text-primary);
+        }
+
+        /* 页脚 */
+        footer {
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 导航栏 -->
+        <header>
+            <a href="#" class="logo">lwxname.com</a>
+            <nav>
+                <a href="#" class="active">Articles</a>
+                <a href="#about">About</a>
+                <a href="https://github.com/spider-man-lwx" target="_blank">GitHub →</a>
+            </nav>
+        </header>
+
+        <!-- 个人简介 -->
+        <div class="profile-section">
+            <h1 class="profile-title">李伟星 <em>· 一个持续探索的程序员</em></h1>
+            <p class="profile-desc">
+                保持好奇，记录代码实践、生活感悟与自动化工具开发点滴。用简洁的代码解决实际问题，享受创造的乐趣。
+            </p>
+            <div class="meta-tags">
+                <span>📍 中国 · 北京/深圳</span>
+                <span>⚡ Python / Web / Automation</span>
+                <span>🌱 Lifelong Learner</span>
+            </div>
+        </div>
+
+        <!-- 当前状态 -->
+        <section>
+            <div class="section-header">§ 01 · CURRENTLY</div>
+            <div class="currently-box">
+                正在维护个人自动待办事项晨报系统，探索高效的云端自动化与个人知识管理流。
+            </div>
+        </section>
+
+        <!-- 文章与随笔列表 -->
+        <section>
+            <div class="section-header">§ 02 · ARTICLES & NOTES</div>
+            <ul class="post-list" id="post-list">
+                <!-- 动态文章由 JS 渲染或静态展示 -->
+                <li class="post-item">
+                    <a href="newpost.md" class="post-link">用 GitHub API 编写的第一篇文章</a>
+                    <span class="post-date">2026-09-28</span>
+                </li>
+                <li class="post-item">
+                    <a href="#" class="post-link">打造私有待办事项晨报与手机同步系统</a>
+                    <span class="post-date">2026-09-14</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- 页脚 -->
+        <footer>
+            <div>© 2026 李伟星 (lwxname.com)</div>
+            <div>Powered by GitHub Pages</div>
+        </footer>
+    </div>
+
+</body>
+</html>
