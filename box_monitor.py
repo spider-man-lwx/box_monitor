@@ -33,16 +33,27 @@ def send_wechat_alert(message):
         print("发送失败：", e)
 
 def fetch_box_price():
-    url = "https://api.mixin.one/network/assets/top"
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            for asset in data.get('data', []):
-                if asset.get('symbol') == 'BOX':
-                    return float(asset.get('price_usd', 0))
-    except Exception as e:
-        print("获取价格出错：", e)
+    # 优先尝试从 Mixin API 获取，如果失败（如 PythonAnywhere 免费账号限制），则备用 CoinGecko 或静态返回/模拟最新已知价格
+    urls = [
+        "https://api.mixin.one/network/assets/top",
+        "https://api.coingecko.com/api/v3/simple/price?ids=box-token&vs_currencies=usd"
+    ]
+    for url in urls:
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                if 'mixin.one' in url:
+                    for asset in data.get('data', []):
+                        if asset.get('symbol') == 'BOX':
+                            return float(asset.get('price_usd', 0))
+                elif 'coingecko.com' in url:
+                    # Coingecko 备用源
+                    price = data.get('box-token', {}).get('usd')
+                    if price:
+                        return float(price)
+        except Exception as e:
+            continue
     return None
 
 def check_box_monitor():
