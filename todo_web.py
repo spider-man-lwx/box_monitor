@@ -14,9 +14,9 @@ def send_wechat_notification():
     for t in tasks:
         status = "[x]" if t['completed'] else "[ ]"
         lines.append(f"[{t['date']}] {status} {t['text']}")
-    
+
     content = "【日历待办清单实时更新】\n" + "\n".join(lines) if lines else "【日历待办清单实时更新】\n当前暂无待办事项"
-    
+
     payload = {
         "msgtype": "text",
         "text": {"content": content}
@@ -24,8 +24,8 @@ def send_wechat_notification():
     try:
         req_data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(
-            WEBHOOK_URL, 
-            data=req_data, 
+            WEBHOOK_URL,
+            data=req_data,
             headers={'Content-Type': 'application/json'}
         )
         urllib.request.urlopen(req)
@@ -55,7 +55,7 @@ HTML_TEMPLATE = '''
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             max-width: 540px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 40px 20px 100px 20px;
             background-color: var(--bg-color);
             color: var(--text-main);
             -webkit-font-smoothing: antialiased;
@@ -68,6 +68,21 @@ HTML_TEMPLATE = '''
             color: var(--text-main);
             border-bottom: 1px solid var(--border);
             padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-actions {
+            font-size: 13px;
+            font-weight: normal;
+        }
+        .header-actions a {
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .header-actions a:hover {
+            text-decoration: underline;
         }
         form {
             background-color: var(--card-bg);
@@ -122,6 +137,20 @@ HTML_TEMPLATE = '''
             letter-spacing: 1px;
             color: var(--text-muted);
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .select-group-btn {
+            font-size: 12px;
+            color: var(--accent);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .select-group-btn:hover {
+            text-decoration: underline;
         }
         ul {
             list-style: none;
@@ -133,7 +162,7 @@ HTML_TEMPLATE = '''
         }
         li {
             background-color: var(--card-bg);
-            padding: 16px;
+            padding: 14px 16px;
             border-radius: 10px;
             border: 1px solid var(--border);
             display: flex;
@@ -142,16 +171,20 @@ HTML_TEMPLATE = '''
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             transition: transform 0.1s;
         }
-        li:active {
-            transform: scale(0.99);
-        }
-        .task-info {
+        .task-label {
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 15px;
             flex: 1;
+            cursor: pointer;
             word-break: break-all;
+        }
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
         }
         .done {
             text-decoration: line-through;
@@ -186,11 +219,57 @@ HTML_TEMPLATE = '''
         a.btn:hover {
             opacity: 0.85;
         }
+
+        /* 底部悬浮批量操作栏 */
+        .batch-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #161b22;
+            border-top: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+            z-index: 1000;
+        }
+        .batch-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .batch-btn.del {
+            background-color: var(--danger);
+        }
+        .batch-btn:hover {
+            opacity: 0.9;
+        }
+        .select-all-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h2>📅 日历待办管家</h2>
-    
+    <h2>
+        <span>📅 日历待办管家</span>
+        <span class="header-actions">
+            <a onclick="toggleSelectAll()">全选/取消</a>
+        </span>
+    </h2>
+
     <form action="/add" method="POST">
         <div class="form-row">
             <input type="text" name="task_text" placeholder="输入新的待办事项..." required autocomplete="off">
@@ -199,26 +278,62 @@ HTML_TEMPLATE = '''
         <button type="submit">添加任务</button>
     </form>
 
-    {% for date_str, items in grouped_tasks.items() %}
-    <div class="date-group">
-        <div class="date-title">📌 {{ date_str }}</div>
-        <ul>
-            {% for item in items %}
-            <li>
-                <span class="task-info {% if item.task.completed %}done{% endif %}">
-                    {% if item.task.completed %}✅{% else %}⬜{% endif %} {{ item.task.text }}
-                </span>
-                <div class="action-btns">
-                    <a class="btn {% if item.task.completed %}done-btn{% endif %}" href="/toggle/{{ item.global_index }}">
-                        {% if item.task.completed %}取消{% else %}完成{% endif %}
-                    </a>
-                    <a class="btn del-btn" href="/delete/{{ item.global_index }}" onclick="return confirm('确定要删除这个任务吗？');">删除</a>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endfor %}
+    <form id="batch-form" method="POST" action="/batch">
+        {% for date_str, items in grouped_tasks.items() %}
+        <div class="date-group">
+            <div class="date-title">
+                <span>📌 {{ date_str }}</span>
+                <button type="button" class="select-group-btn" onclick="toggleGroup('{{ date_str }}')">选中该组</button>
+            </div>
+            <ul>
+                {% for item in items %}
+                <li>
+                    <label class="task-label">
+                        <input type="checkbox" name="task_indices" value="{{ item.global_index }}" class="task-checkbox group-{{ date_str }}" {% if item.task.completed %}checked{% endif %}>
+                        <span class="{% if item.task.completed %}done{% endif %}">
+                            {% if item.task.completed %}✅{% else %}⬜{% endif %} {{ item.task.text }}
+                        </span>
+                    </label>
+                    <div class="action-btns">
+                        <a class="btn {% if item.task.completed %}done-btn{% endif %}" href="/toggle/{{ item.global_index }}">
+                            {% if item.task.completed %}取消{% else %}完成{% endif %}
+                        </a>
+                        <a class="btn del-btn" href="/delete/{{ item.global_index }}" onclick="return confirm('确定要删除这个任务吗？');">删除</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+
+        <div class="batch-bar">
+            <label class="select-all-label">
+                <input type="checkbox" id="master-checkbox" onclick="toggleMaster(this)"> 批量操作
+            </label>
+            <button type="submit" name="action" value="complete" class="batch-btn">一键标记完成</button>
+            <button type="submit" name="action" value="uncomplete" class="batch-btn" style="background-color: #30363d; color: var(--text-main);">一键取消完成</button>
+            <button type="submit" name="action" value="delete" class="batch-btn del" onclick="return confirm('确定要删除选中的任务吗？');">一键删除</button>
+        </div>
+    </form>
+
+    <script>
+        function toggleMaster(master) {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            const master = document.getElementById('master-checkbox');
+            if (master) master.checked = !allChecked;
+        }
+        function toggleGroup(dateStr) {
+            const groupCheckboxes = document.querySelectorAll('.group-' + dateStr);
+            const allChecked = Array.from(groupCheckboxes).every(cb => cb.checked);
+            groupCheckboxes.forEach(cb => cb.checked = !allChecked);
+        }
+    </script>
 </body>
 </html>
 '''
@@ -260,15 +375,15 @@ def save_tasks(tasks):
 def index():
     tasks = load_tasks()
     today_str = datetime.date.today().isoformat()
-    
+
     grouped = {}
     for idx, task in enumerate(tasks):
         d = task['date']
         if d not in grouped:
             grouped[d] = []
         grouped[d].append({'task': task, 'global_index': idx})
-    
-    sorted_grouped = dict(sorted(grouped.items()))
+
+    sorted_grouped = dict(sorted(grouped.items(), reverse=True))
     return render_template_string(HTML_TEMPLATE, grouped_tasks=sorted_grouped, today=today_str)
 
 @app.route('/add', methods=['POST'])
@@ -298,6 +413,32 @@ def delete_task(index):
         tasks.pop(index)
         save_tasks(tasks)
         send_wechat_notification()
+    return redirect(url_for('index'))
+
+@app.route('/batch', methods=['POST'])
+def batch_action():
+    action = request.form.get('action')
+    selected_indices = request.form.getlist('task_indices')
+    selected_indices = [int(i) for i in selected_indices]
+
+    tasks = load_tasks()
+    if action == 'complete':
+        for idx in selected_indices:
+            if 0 <= idx < len(tasks):
+                tasks[idx]['completed'] = True
+    elif action == 'uncomplete':
+        for idx in selected_indices:
+            if 0 <= idx < len(tasks):
+                tasks[idx]['completed'] = False
+    elif action == 'delete':
+        # 从后往前删除，避免索引偏移
+        selected_indices = sorted(selected_indices, reverse=True)
+        for idx in selected_indices:
+            if 0 <= idx < len(tasks):
+                tasks.pop(idx)
+
+    save_tasks(tasks)
+    send_wechat_notification()
     return redirect(url_for('index'))
 
 import os
